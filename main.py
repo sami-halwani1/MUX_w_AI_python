@@ -92,6 +92,7 @@ class Currency:
         self.currencyList = []
         self.muxValue = 0
         self.concurrentHit = 0
+        self.muxGraph = 0 #AI Checked Rate
         self.lastHit = 0 #check to see if Last was Positive or Negative
         
 
@@ -107,9 +108,6 @@ class Currency:
             # Add the new currency
             self.currencyList.append(currency)
             # print(f'{currency["isoCode"]} has been added to the currencyList')
-        
-    def postCurrencyList(self):
-        print(f'Current Currency List: {self.currencyList}')
 
     def removeCurrency(self, currencyIso: str):
         index = next((i for i, record in enumerate(self.currencyList) if record["isoCode"] == currencyIso), None)
@@ -119,8 +117,34 @@ class Currency:
             print(f'{currencyIso} has been removed from the Currency List')
         else:
             print(f'{currencyIso} does not exist in the Currency List')  
+        
+    def postCurrencyList(self):
+        print(f'Current Currency List: {self.currencyList}')
 
-    def getConversionRate(self, iso1:str, iso2: str):
+    def printCurrencyValue(self):
+        # print(self.currencyList)
+        for _ in self.currencyList:
+            print(_['isoCode'])
+            # print(self.currencyList[i]["isoCode"])
+        isoChoice = input( f'Please Select a Currency from the List: ')
+
+        isoReturn = next((i for i, record in enumerate(self.currencyList) if isoChoice.upper() == record["isoCode"].upper()), None)
+        # print(isoReturn) 
+        if isoReturn is not None:
+            print(f'The {self.currencyList[isoReturn]["currency_Name"]} is valued at: ' + "{:.2f}".format(self.currencyList[isoReturn]["value"]))
+
+    def runIterations(self):
+        iterations = input("Please enter the number of iterations you would like to run: ")
+        for i in range(int(iterations)):
+            print(f'Iteration [{i+1}] Started!')
+            self.scalingValues()
+            print(f'Iteration [{i+1}] Completed!')
+        print(f'All Iterations Complete')
+
+
+    def printConversionRate(self):
+        iso1 = input("Please Enter The ISO of the First Value: ")
+        iso2 = input("Please Enter The ISO of the Second  Value: ")
         index1 = next((i for i, record in enumerate(self.currencyList) if record["isoCode"] == iso1), None)
         index2 = next((i for i, record in enumerate(self.currencyList) if record["isoCode"] == iso2), None)
 
@@ -138,30 +162,36 @@ class Currency:
             conversionRate = val2/val1
             print(f'The Conversion rate from {iso1} to {iso2} is {conversionRate}') 
     
-    def postCurrencyValue(self):
-        # print(self.currencyList)
-        for _ in self.currencyList:
-            print(_['isoCode'])
-            # print(self.currencyList[i]["isoCode"])
-        isoChoice = input( f'Please Select a Currency from the List: ')
+    def invest(self):
 
-        isoReturn = next((i for i, record in enumerate(self.currencyList) if isoChoice.upper() == record["isoCode"].upper()), None)
-        # print(isoReturn) 
-        if isoReturn is not None:
-            print(f'The {self.currencyList[isoReturn]["currency_Name"]} is valued at: ' + "{:.2f}".format(self.currencyList[isoReturn]["value"]))
+        print(f'The Current Value of MUX is: {self.muxValue}')
+        if self.muxGraph <= -0.75:
+            print("You're Fucked if you do, Bro.")
+        elif self.muxGraph <= -0.5 and self.muxGraph > -0.75:
+            print("Don't Invest.")
+        elif self.muxGraph <= -0.25 and self.muxGraph > -0.5:
+            print("Meh, Not the best. But it could be worse. Probably not though.")
+        elif self.muxGraph <= 0 and self.muxGraph > -0.25:
+            print("Could be worse. Sit on it. I would say its okay!")
+        elif self.muxGraph <= 0.25 and self.muxGraph > 0:
+            print("Wouldn't hurt. Go for it!")
+        elif self.muxGraph <= 0.5 and self.muxGraph > 0.25:
+            print("Looking Good! Invest!")
+        elif self.muxGraph <= 0.75 and self.muxGraph > 0.5:
+            print("Why haven't you invested? This shit is golden")
+        elif self.muxGraph <= 1 and self.muxGraph > 0.75:
+            print("BOI, PUT YO DAMN DOLLAR IN THE MUX!!! IT'S GOLDEN HOUR!!!") 
+    
 
-    def runIterations(self):
-        iterations = input("Please enter the number of iterations you would like to run: ")
-        for i in range(int(iterations)):
-            print(f'Iteration [{i+1}] Started!')
-            #Scaling Values()
-            print(f'Iteration [{i+1}] Completed!')
-        print(f'All Iterations Complete')
+    
 
     def scalingValues(self):
         random.seed()
         r = random.randint(0,99)
         isNegative = random.randint(0,1)
+
+    def scaler(self):
+        return
 
 
 
