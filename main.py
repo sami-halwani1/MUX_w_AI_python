@@ -92,9 +92,8 @@ class Currency:
         self.currencyList = []
         self.muxValue = 0
         self.concurrentHit = 0
-        self.muxGraph = 0 #AI Checked Rate
-        self.lastHit = 0 #check to see if Last was Positive or Negative
         
+        self.lastHit = [0, 0] #check to see if Last was Positive or Negative
 
     def addCurrency(self, currency: dict): 
         # Check if the currency already exists (by isoCode)
@@ -108,6 +107,12 @@ class Currency:
             # Add the new currency
             self.currencyList.append(currency)
             # print(f'{currency["isoCode"]} has been added to the currencyList')
+
+    # def init_MUX(self):
+    #     for i, record in enumerate(self.currencyList):
+    #         if record["isoCode"] == "MUX":
+    #             self.muxValue =  record["value"]
+
 
     def removeCurrency(self, currencyIso: str):
         index = next((i for i, record in enumerate(self.currencyList) if record["isoCode"] == currencyIso), None)
@@ -165,39 +170,89 @@ class Currency:
     def invest(self):
 
         print(f'The Current Value of MUX is: {self.muxValue}')
-        if self.muxGraph <= -0.75:
+        if self.muxValue <= -0.75:
             print("You're Fucked if you do, Bro.")
-        elif self.muxGraph <= -0.5 and self.muxGraph > -0.75:
+        elif self.muxValue <= -0.5 and self.muxValue > -0.75:
             print("Don't Invest.")
-        elif self.muxGraph <= -0.25 and self.muxGraph > -0.5:
+        elif self.muxValue <= -0.25 and self.muxValue > -0.5:
             print("Meh, Not the best. But it could be worse. Probably not though.")
-        elif self.muxGraph <= 0 and self.muxGraph > -0.25:
+        elif self.muxValue <= 0 and self.muxValue > -0.25:
             print("Could be worse. Sit on it. I would say its okay!")
-        elif self.muxGraph <= 0.25 and self.muxGraph > 0:
+        elif self.muxValue <= 0.25 and self.muxValue > 0:
             print("Wouldn't hurt. Go for it!")
-        elif self.muxGraph <= 0.5 and self.muxGraph > 0.25:
+        elif self.muxValue <= 0.5 and self.muxValue > 0.25:
             print("Looking Good! Invest!")
-        elif self.muxGraph <= 0.75 and self.muxGraph > 0.5:
+        elif self.muxValue <= 0.75 and self.muxValue > 0.5:
             print("Why haven't you invested? This shit is golden")
-        elif self.muxGraph <= 1 and self.muxGraph > 0.75:
+        elif self.muxValue <= 1 and self.muxValue > 0.75:
             print("BOI, PUT YO DAMN DOLLAR IN THE MUX!!! IT'S GOLDEN HOUR!!!") 
     
+    def scaler(self, concurrentHit, muxValue, magnitude):
+        scalingValue = 0.00
+        if concurrentHit < 2:
+            scalingValue = .5
+        elif concurrentHit < 3:
+            scalingValue = 1.0
+        elif concurrentHit < 4:
+            scalingValue = 2.5
+        elif concurrentHit < 5:
+            scalingValue = 5.0
+        elif concurrentHit < 10:
+            scalingValue = 10.00
+        else:
+            scalingValue = 15.0
 
+        muxValue += (-1 * scalingValue) * magnitude
+        if muxValue <= -1:
+            return -1.00
+        elif muxValue >= 1:
+            return 1.00
+
+        return muxValue
     
 
     def scalingValues(self):
         random.seed()
-        r = random.randint(0,99)
-        isNegative = random.randint(0,1)
 
-    def scaler(self):
-        return
+        for i, record in enumerate(self.currencyList):
+            if record["isoCode"] ==  "MUX":
+                average = 0.00
+                for j in range(5):
+                    average = average + self.currencyList[j]["value"]
+                average = average/5
+                if average < record["value"]:
+                    magnitude = average - record["value"]
+                    self.muxValue = self.scaler(self.concurrentHit, self.muxValue, magnitude)
+                    self.lastHit[0] = self.lastHit[1]
+                    self.lastHit[1] = 1 #Negative
+                else:
+                    magnitude = average - record["value"]
+                    self.muxValue = self.scaler(self.concurrentHit, self.muxValue, magnitude)
+                    self.lastHit[0] = self.lastHit[1]
+                    self.lastHit[1] = 0 #Postive
+                if self.lastHit[0] == self.lastHit[1]:
+                    self.concurrentHit += 1
+                else:
+                    self.concurrentHit = 1
+            
+                record["value"] = average
+            elif record["isoCode"] ==  "USD":
+                pass
+            else:
+                r = random.randint(0,5)
+                rDouble = r/1000
+                isNegative = random.randint(0,1)
+                
+                if isNegative == 1:
+                    rDouble = rDouble * -1
+                    if record["value"] >= 0.05:
+                        record["value"] = record["value"] + rDouble 
+                else:
+                    if record["value"] >= 0.05:
+                        record["value"] = record["value"] + rDouble 
 
-
-
-
-
-
+                
+    
 
 if __name__ == "__main__":
     currencyList = Currency()  
@@ -205,10 +260,34 @@ if __name__ == "__main__":
     for default in DEFAULTS:  
         for currency in default["Currency"]:  
             currencyList.addCurrency(currency)
-   
     print("Defaults have been initialized!")
-
-    # currencyList.getConversionRate("GBP", "JPY")
-    currencyList.postCurrencyValue()
     
+    while True:
+        print("============================")
+        print("Welcome to Majeks Currency!")
+        print("============================")
+        print("1. Display current Currencies \n"
+        + "2. Print Currency Value \n"
+        + "3. Compare Two Currency Values \n"
+        + "4. Run Iterations \n"
+        + "5. Should you Invest? \n"
+        + "6. Exit \n")
+        userInput = input("Your Choice: ")
+
+        if userInput == "1":
+            currencyList.postCurrencyList()
+        elif userInput == "2":
+            currencyList.printCurrencyValue()
+        elif userInput == "3":
+            currencyList.printConversionRate()
+        elif userInput == "4":
+            currencyList.runIterations()
+        elif userInput == "5":
+            currencyList.invest()
+        elif userInput == "6":
+            print("Thank you for using Majeks Currency, See you later!")
+            break
+        else:
+            print("Invalid Input!")
+
 
